@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emperium Chronicles - Final Script Fix</title>
+    <style>
+        body { margin: 0; background: #000; font-family: sans-serif; overflow: hidden; }
+        #game-screen { position: relative; width: 100vw; height: 100vh; background-size: cover; background-position: center; transition: 0.8s; }
+        .char { position: absolute; bottom: 100px; height: 30%; transition: opacity 0.5s, right 0.5s, transform 0.3s; opacity: 0; }
+        #alex { left: 10%; }
+        #anna { right: 15%; }
+        #napo { right: 8%; }
+        #rob { right: 0; }
+        #ui { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; 
+              background: rgba(0,0,0,0.85); border: 2px solid #ffcc00; border-radius: 10px; padding: 15px; color: #fff; z-index: 100; cursor: pointer; }
+        #name { color: #ffcc00; font-weight: bold; font-size: 1.2em; margin-bottom: 5px; }
+        #text { font-size: 1.1em; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<div id="game-screen" style="background-image: url('bg_kerajaan.png');">
+    <img src="alex.png" id="alex" class="char">
+    <img src="anna.png" id="anna" class="char">
+    <img src="napoleon.png" id="napo" class="char">
+    <img src="robert.png" id="rob" class="char">
+
+    <div id="ui" onclick="next()">
+        <div id="name">Narator</div>
+        <div id="text">Klik untuk mulai cerita...</div>
+    </div>
+</div>
+
+<audio id="audio-bgm" loop></audio>
+<audio id="audio-sfx"></audio>
+
+<script>
+    let step = 0;
+    const screen = document.getElementById('game-screen');
+    const txtName = document.getElementById('name');
+    const txtContent = document.getElementById('text');
+    const charAlex = document.getElementById('alex');
+    const charAnna = document.getElementById('anna');
+    const charNapo = document.getElementById('napo');
+    const charRob = document.getElementById('rob');
+    const bgm = document.getElementById('audio-bgm');
+    const sfx = document.getElementById('audio-sfx');
+
+    const cerita = [
+        { n: "Narator", t: "Kerajaan Emperium yang damai...", s: () => { bgm.src = "bgm_kingdom.mp3"; bgm.play(); } },
+        { n: "Alex", t: "Mimpiku adalah menjadi ksatria pelindung Putri Anna...", s: () => {} },
+        
+        // --- ADEGAN MIMPI ---
+        { n: "Alex", t: "Hingga suatu hari, aku bermimpi sangat nyata. Suasana yang asing...", s: () => { 
+            screen.style.backgroundImage = "url('adegan_mimpi.png')"; 
+            bgm.src = "bgm_dream.mp3"; bgm.play();
+            sfx.src = "sfx_magic.mp3"; sfx.play();
+        }},
+        { n: "Putri Anna", t: "Siapa kamu? Apakah ksatria yang akan melindungiku?", s: () => {} },
+        
+        // --- TERBANGUN ---
+        { n: "Narator", t: "Tiba-tiba Alex terbangun. Waktu berlalu, ia kini menjadi Rookie Knight.", s: () => { 
+            screen.style.backgroundImage = "url('bg_kerajaan.png')";
+            bgm.src = "bgm_kingdom.mp3"; bgm.play();
+        }},
+        
+        // --- BATTLE ---
+        { n: "Napoleon", t: "Hahaha! Rookie lemah sepertimu tak pantas berada di sini!", s: () => { charNapo.style.opacity = 1; } },
+        { n: "Alex", t: "Jaga bicaramu! Akan kubuktikan siapa yang layak!", s: () => { charAlex.style.opacity = 1; } },
+        { n: "Narator", t: "*DUARR!* Serangan Napoleon sangat kuat!", s: () => { sfx.src="sfx_hit.mp3"; sfx.play(); }},
+        { n: "Alex", t: "Ugh... kekuatannya...!", s: () => { charAlex.src="alex_luka.png"; charAlex.style.transform="rotate(-15deg)"; }},
+        
+        // --- ROBERTO & ANNA TIBA ---
+        { n: "Putri Anna", t: "HENTIKAN! Cukup Napoleon!", s: () => { charAnna.style.opacity = 1; charAnna.style.right = "35%"; }},
+        { n: "Roberto", t: "Tuan Putri, saya sudah tiba.", s: () => { charRob.style.opacity = 1; }},
+        { n: "Narator", t: "Alex pingsan. Putri Anna membawa Alex ke istananya untuk dirawat.", s: () => { 
+            charAlex.style.opacity = 0; charAnna.style.opacity = 0; charNapo.style.opacity = 0; charRob.style.opacity = 0;
+            bgm.pause();
+        }},
+
+        // --- DI ISTANA (BGM DREAM) ---
+        { n: "Putri Anna", t: "Syukurlah kau sudah bangun.", s: () => { 
+            screen.style.backgroundImage = "url('bg_kamar.png')";
+            bgm.src = "bgm_dream.mp3"; bgm.play();
+            charAlex.src="alex.png"; charAlex.style.transform="none"; charAlex.style.opacity=1; 
+            charAnna.style.opacity=1; charAnna.style.right="15%"; 
+        }},
+        { n: "Alex", t: "Ugh... di mana aku?", s: () => {} },
+        { n: "Putri Anna", t: "Kau berada di istanaku ksatria rookie Alex.", s: () => {} },
+        { n: "Alex", t: "(Tampangnya... mirip seperti di mimpiku!) Kau putri anna yah?", s: () => {} },
+        { n: "Putri Anna", t: "Benar sekali aku putri anna.", s: () => {} },
+        { n: "Alex", t: "*Bersujud lemah* Suatu kehormatan bisa bertemu mu tuan putri...", s: () => { charAlex.style.transform = "translateY(20px)"; }},
+        { n: "Putri Anna", t: "Sudah-sudah, kondisi mu masih lemah. Sebaiknya kau istirahat saja, anggaplah seperti rumah sendiri.", s: () => { charAlex.style.transform = "translateY(0px)"; }},
+        { n: "Alex", t: "Baik putri.", s: () => {} },
+
+        // --- MOTIVASI ---
+        { n: "Putri Anna", t: "Alex, apa impian mu?", s: () => {} },
+        { n: "Alex", t: "Impian ku adalah menjadi pelindung mu tuan putri dan juga kerajaan emperium.", s: () => {} },
+        { n: "Putri Anna", t: "Aku yakin kau pasti bisa mencapai mimpi itu.", s: () => {} },
+        { n: "Alex", t: "Tetapi kan aku hanya ksatria rookie...", s: () => {} },
+        { n: "Putri Anna", t: "Semua itu ada proses nya, terkadang yang lemah suatu saat pasti akan jadi kuat.", s: () => {} },
+        { n: "Putri Anna", t: "Itulah yang diajarkan ayah ku. Lagian kau tidak sendiri, kalau kau tak keberatan aku bisa membantu mu Alex.", s: () => {} },
+
+        // --- CLOSING ---
+        { n: "Alex", t: "Terimakasih tuan putri anna.", s: () => { 
+            setTimeout(() => { alert("BERSAMBUNG..."); }, 500);
+        }}
+    ];
+
+    function next() {
+        if (step < cerita.length) {
+            const data = cerita[step];
+            txtName.innerText = data.n;
+            txtContent.innerText = data.t;
+            data.s();
+            step++;
+        }
+    }
+</script>
+</body>
+</html>
